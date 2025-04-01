@@ -1,6 +1,7 @@
 #include "allocator.h"
-static int find_first_fit(int request_size){
-	int current_addr = 0;
+int last_stored_hole = 0;//address of the last stored hole
+static int find_next_fit(int request_size){
+	int current_addr = last_stored_hole;
 	number_of_examined_holes++;
 	//find the first hole!
 	while(memory[current_addr] >= 0){
@@ -8,7 +9,9 @@ static int find_first_fit(int request_size){
 		current_addr += (memory[current_addr]//size
 						+ 4/*metadata*/); //next block/hole
 		if(current_addr > n-1)//out of bound
-			return -1;//request failed!
+			current_addr = 0;//current_addr sent to beginning!
+		if(current_addr == last_stored_hole)
+			return -1;
 	}
 	int first_hole_addr = current_addr;
 	//find the first hole whose size is not less than request_size
@@ -19,6 +22,8 @@ static int find_first_fit(int request_size){
 		if(current_addr == first_hole_addr)//no hole is large enough
 			return -1;//request failed!
 	}
+	last_stored_hole = current_addr;//store the last hole address
+	//update the last_stored_hole to the current hole address
 	return current_addr;//Address of the first hole whose size is appropriate!
 }
 static void print_all_blocks(int count){
@@ -43,8 +48,8 @@ static void print_all_holes(){
 	}while(hole);
 	putchar('\n');
 }
-void simulate_first_fit(){
-	printf("Simulating first-fit!\n");
+void simulate_next_fit(){
+	printf("Simulating next-fit!\n");
 	memory[0] = -(n-4);
 	memory[n-1] = -(n-4);
 	memory[1] = memory[2] = 0;//prev and next pointers
@@ -56,7 +61,7 @@ void simulate_first_fit(){
 	for(int round = 0; round < x; round++){
 		while(1){
 			printf("Trying to satisfy request(%d)...", next_request[i]);
-			int hole_addr = find_first_fit(next_request[i]);
+			int hole_addr = find_next_fit(next_request[i]);
 			printf("\thole address: %d\n", hole_addr);
 			if(hole_addr < 0)//request failed!
 				break;

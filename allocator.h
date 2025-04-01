@@ -23,6 +23,9 @@ typedef struct{
 }block;//structure that represents one block
 extern block blocks[MAX_BLOCK_COUNT];//storing all blocks
 void simulate_first_fit(void);
+void simulate_next_fit(void);
+void simulate_best_fit(void);
+void simulate_worst_fit(void);
 void release(int block_index);
 void occupy(int hole_addr, int block_size, int block_id);
 #endif
